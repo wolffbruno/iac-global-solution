@@ -77,7 +77,7 @@ resource "azurerm_lb_rule" "web" {
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
-  frontend_ip_configuration_name = "publicIPAddress"
+  frontend_ip_configuration_name = "public-ip"
   probe_id                       = azurerm_lb_probe.web.id
 }
 
@@ -100,6 +100,7 @@ resource "azurerm_linux_virtual_machine" "web_instance_1" {
   location              = azurerm_resource_group.web.location
   size                  = "Standard_B1ls"
   admin_username        = "adminuser"
+  admin_password = "Password1234!"
   network_interface_ids = [azurerm_network_interface.web_nic_1.id]
   disable_password_authentication = false
 
@@ -134,6 +135,7 @@ resource "azurerm_linux_virtual_machine" "web_instance_2" {
   location              = azurerm_resource_group.web.location
   size                  = "Standard_B1ls"
   admin_username        = "adminuser"
+  admin_password = "Password1234!"
   network_interface_ids = [azurerm_network_interface.web_nic_2.id]
   disable_password_authentication = false
   os_disk {
@@ -176,7 +178,7 @@ resource "azurerm_network_interface" "web_nic_1" {
   resource_group_name = azurerm_resource_group.web.name
 
   ip_configuration {
-    name                          = "ipConfiguration1"
+    name                          = "ip-configuration1"
     subnet_id                     = azurerm_subnet.web.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -196,7 +198,7 @@ resource "azurerm_network_interface" "web_nic_2" {
     resource_group_name = azurerm_resource_group.web.name
     
     ip_configuration {
-        name                          = "ipConfiguration2"
+        name                          = "ip-configuration2"
         subnet_id                     = azurerm_subnet.web.id
         private_ip_address_allocation = "Dynamic"
     }

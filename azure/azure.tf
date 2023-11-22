@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "web" {
-  name     = "resourceGroupName"
+  name     = "iac-resource"
   location = "East US"
 }
 

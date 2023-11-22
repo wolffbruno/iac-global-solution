@@ -12,14 +12,11 @@ terraform {
     key                  = "terraform.tfstate"
   }
 }
-// AZURE TERRAFORM PROVIDER
+
 provider "azurerm" {
   features {}
   use_msi = true
 }
-
-# Path: main.tf
-# create a blob storage account
 
 resource "azurerm_resource_group" "rg" {
   name     = "iac-terraform"

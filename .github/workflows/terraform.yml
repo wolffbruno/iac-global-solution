@@ -18,6 +18,12 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   
+    - name: 'Terraform init'
+      run: terraform init
+
+    - name: 'Terraform apply'
+      run: terraform apply -auto-approve
+    
     - name: 'Run Azure CLI commands'
       run: |
           az account show

@@ -1,4 +1,4 @@
-name: Run Azure Login with OpenID Connect
+name: Provision Azure Resources
 on:
     push:
       branches: [ main ]

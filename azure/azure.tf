@@ -162,6 +162,12 @@ resource "azurerm_linux_virtual_machine" "web_instance_2" {
 }
 
 # Create network interface for the VMs
+resource "azurerm_public_ip" "nic_1" {
+    name                = "publicIPAddressName2"
+    location            = azurerm_resource_group.web.location
+    resource_group_name = azurerm_resource_group.web.name
+    allocation_method   = "Static"
+}
 resource "azurerm_network_interface" "web_nic_1" {
   name                = "webNic1"
   location            = azurerm_resource_group.web.location
@@ -171,8 +177,16 @@ resource "azurerm_network_interface" "web_nic_1" {
     name                          = "ipConfiguration1"
     subnet_id                     = azurerm_subnet.web.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.web.id
+    public_ip_address_id          = azurerm_public_ip.nic_1.id
   }
+}
+
+
+resource "azurerm_public_ip" "nic_2" {
+    name                = "publicIPAddressName2"
+    location            = azurerm_resource_group.web.location
+    resource_group_name = azurerm_resource_group.web.name
+    allocation_method   = "Static"
 }
 
 resource "azurerm_network_interface" "web_nic_2" {
@@ -184,7 +198,7 @@ resource "azurerm_network_interface" "web_nic_2" {
         name                          = "ipConfiguration2"
         subnet_id                     = azurerm_subnet.web.id
         private_ip_address_allocation = "Dynamic"
-        public_ip_address_id          = azurerm_public_ip.web.id
+        public_ip_address_id          = azurerm_public_ip.nic_2.id
     }
 }
 

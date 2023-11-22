@@ -94,14 +94,14 @@ resource "azurerm_lb_probe" "web" {
 
 # Azure Virtual Machine - Instance 1
 resource "azurerm_linux_virtual_machine" "web_instance_1" {
-  name                  = "web-instance-1"
-  computer_name         = "hostname1"
-  resource_group_name   = azurerm_resource_group.web.name
-  location              = azurerm_resource_group.web.location
-  size                  = "Standard_B1ls"
-  admin_username        = "adminuser"
-  admin_password = "Password1234!"
-  network_interface_ids = [azurerm_network_interface.web_nic_1.id]
+  name                            = "web-instance-1"
+  computer_name                   = "hostname1"
+  resource_group_name             = azurerm_resource_group.web.name
+  location                        = azurerm_resource_group.web.location
+  size                            = "Standard_B1ls"
+  admin_username                  = "adminuser"
+  admin_password                  = "Password1234!"
+  network_interface_ids           = [azurerm_network_interface.web_nic_1.id]
   disable_password_authentication = false
 
   os_disk {
@@ -127,50 +127,12 @@ resource "azurerm_linux_virtual_machine" "web_instance_1" {
   )
 }
 
-# Azure Virtual Machine - Instance 2
-resource "azurerm_linux_virtual_machine" "web_instance_2" {
-  name                  = "web-instance-2"
-  computer_name         = "hostname2"
-  resource_group_name   = azurerm_resource_group.web.name
-  location              = azurerm_resource_group.web.location
-  size                  = "Standard_B1ls"
-  admin_username        = "adminuser"
-  admin_password = "Password1234!"
-  network_interface_ids = [azurerm_network_interface.web_nic_2.id]
-  disable_password_authentication = false
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
-  }
-
-  custom_data = base64encode(<<-EOF
-                  #!/bin/bash
-                  sudo apt-get update
-                  sudo apt-get install -y apache2
-                  sudo systemctl start apache2
-                  sudo systemctl enable apache2
-                  echo '<h1>Página HTML própria do Bruno Vinícius Wolff</h1>' | sudo tee /var/www/html/index.html
-                  EOF
-  )
-
-  tags = {
-    Name = "web"
-  }
-}
-
 # Create network interface for the VMs
 resource "azurerm_public_ip" "nic_1" {
-    name                = "public-ip-address-name1"
-    location            = azurerm_resource_group.web.location
-    resource_group_name = azurerm_resource_group.web.name
-    allocation_method   = "Static"
+  name                = "public-ip-address-name1"
+  location            = azurerm_resource_group.web.location
+  resource_group_name = azurerm_resource_group.web.name
+  allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "web_nic_1" {
   name                = "web-nic-1"
@@ -184,35 +146,9 @@ resource "azurerm_network_interface" "web_nic_1" {
   }
 }
 
-
-resource "azurerm_public_ip" "nic_2" {
-    name                = "public-ip-address-name2"
-    location            = azurerm_resource_group.web.location
-    resource_group_name = azurerm_resource_group.web.name
-    allocation_method   = "Static"
-}
-
-resource "azurerm_network_interface" "web_nic_2" {
-    name                = "web-nic-2"
-    location            = azurerm_resource_group.web.location
-    resource_group_name = azurerm_resource_group.web.name
-    
-    ip_configuration {
-        name                          = "ip-configuration2"
-        subnet_id                     = azurerm_subnet.web.id
-        private_ip_address_allocation = "Dynamic"
-    }
-}
-
 # Network Interface Back-end Address Pool Association
 resource "azurerm_network_interface_backend_address_pool_association" "web_nic1_association" {
   network_interface_id    = azurerm_network_interface.web_nic_1.id
   ip_configuration_name   = "ip-configuration1"
   backend_address_pool_id = azurerm_lb_backend_address_pool.web.id
-}
-
-resource "azurerm_network_interface_backend_address_pool_association" "web_nic2_association" {
-    network_interface_id    = azurerm_network_interface.web_nic_2.id
-    ip_configuration_name   = "ip-configuration2"
-    backend_address_pool_id = azurerm_lb_backend_address_pool.web.id
 }

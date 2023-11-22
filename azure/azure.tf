@@ -5,7 +5,7 @@ resource "azurerm_resource_group" "web" {
 
 # Create a virtual network
 resource "azurerm_virtual_network" "web" {
-  name                = "virtualNetworkName"
+  name                = "virtual-network-name"
   address_space       = ["172.0.0.0/16"]
   location            = azurerm_resource_group.web.location
   resource_group_name = azurerm_resource_group.web.name
@@ -13,7 +13,7 @@ resource "azurerm_virtual_network" "web" {
 
 # Create a subnet
 resource "azurerm_subnet" "web" {
-  name                 = "subnetName"
+  name                 = "main-subnet"
   resource_group_name  = azurerm_resource_group.web.name
   virtual_network_name = azurerm_virtual_network.web.name
   address_prefixes     = ["172.0.2.0/24"]
@@ -21,7 +21,7 @@ resource "azurerm_subnet" "web" {
 
 # Create a Network Security Group and rule
 resource "azurerm_network_security_group" "web" {
-  name                = "networkSecurityGroupName"
+  name                = "network-security-group-name"
   location            = azurerm_resource_group.web.location
   resource_group_name = azurerm_resource_group.web.name
 
@@ -46,7 +46,7 @@ resource "azurerm_subnet_network_security_group_association" "web" {
 
 # Public IP address for the Load Balancer
 resource "azurerm_public_ip" "web" {
-  name                = "publicIPAddressName"
+  name                = "public-ip"
   location            = azurerm_resource_group.web.location
   resource_group_name = azurerm_resource_group.web.name
   allocation_method   = "Static"
@@ -54,12 +54,12 @@ resource "azurerm_public_ip" "web" {
 
 # Load Balancer
 resource "azurerm_lb" "web" {
-  name                = "loadBalancerName"
+  name                = "load-balancer"
   location            = azurerm_resource_group.web.location
   resource_group_name = azurerm_resource_group.web.name
 
   frontend_ip_configuration {
-    name                 = "publicIPAddress"
+    name                 = "public-ip"
     public_ip_address_id = azurerm_public_ip.web.id
   }
 }
@@ -67,7 +67,7 @@ resource "azurerm_lb" "web" {
 # Load Balancer Backend Address Pool
 resource "azurerm_lb_backend_address_pool" "web" {
   loadbalancer_id = azurerm_lb.web.id
-  name            = "backendAddressPoolName"
+  name            = "backend-pool"
 }
 
 # Load Balancer Rule for HTTP Traffic
@@ -83,7 +83,7 @@ resource "azurerm_lb_rule" "web" {
 
 # Load Balancer Health Probe for HTTP Traffic
 resource "azurerm_lb_probe" "web" {
-  name                = "httpProbe"
+  name                = "health-probe"
   loadbalancer_id     = azurerm_lb.web.id
   protocol            = "Http"
   port                = 80
@@ -94,7 +94,7 @@ resource "azurerm_lb_probe" "web" {
 
 # Azure Virtual Machine - Instance 1
 resource "azurerm_linux_virtual_machine" "web_instance_1" {
-  name                  = "webInstance1"
+  name                  = "web-instance-1"
   computer_name         = "hostname1"
   resource_group_name   = azurerm_resource_group.web.name
   location              = azurerm_resource_group.web.location
@@ -128,7 +128,7 @@ resource "azurerm_linux_virtual_machine" "web_instance_1" {
 
 # Azure Virtual Machine - Instance 2
 resource "azurerm_linux_virtual_machine" "web_instance_2" {
-  name                  = "webInstance2"
+  name                  = "web-instance-2"
   computer_name         = "hostname2"
   resource_group_name   = azurerm_resource_group.web.name
   location              = azurerm_resource_group.web.location
@@ -165,13 +165,13 @@ resource "azurerm_linux_virtual_machine" "web_instance_2" {
 
 # Create network interface for the VMs
 resource "azurerm_public_ip" "nic_1" {
-    name                = "publicIPAddressName2"
+    name                = "public-ip-address-name1"
     location            = azurerm_resource_group.web.location
     resource_group_name = azurerm_resource_group.web.name
     allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "web_nic_1" {
-  name                = "webNic1"
+  name                = "web-nic-1"
   location            = azurerm_resource_group.web.location
   resource_group_name = azurerm_resource_group.web.name
 
@@ -184,14 +184,14 @@ resource "azurerm_network_interface" "web_nic_1" {
 
 
 resource "azurerm_public_ip" "nic_2" {
-    name                = "publicIPAddressName2"
+    name                = "public-ip-address-name2"
     location            = azurerm_resource_group.web.location
     resource_group_name = azurerm_resource_group.web.name
     allocation_method   = "Static"
 }
 
 resource "azurerm_network_interface" "web_nic_2" {
-    name                = "webNic2"
+    name                = "web-nic-2"
     location            = azurerm_resource_group.web.location
     resource_group_name = azurerm_resource_group.web.name
     
@@ -205,12 +205,12 @@ resource "azurerm_network_interface" "web_nic_2" {
 # Network Interface Back-end Address Pool Association
 resource "azurerm_network_interface_backend_address_pool_association" "web_nic1_association" {
   network_interface_id    = azurerm_network_interface.web_nic_1.id
-  ip_configuration_name   = "ipConfiguration1"
+  ip_configuration_name   = "ip-configuration1"
   backend_address_pool_id = azurerm_lb_backend_address_pool.web.id
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "web_nic2_association" {
     network_interface_id    = azurerm_network_interface.web_nic_2.id
-    ip_configuration_name   = "ipConfiguration2"
+    ip_configuration_name   = "ip-configuration2"
     backend_address_pool_id = azurerm_lb_backend_address_pool.web.id
 }

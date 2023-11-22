@@ -1,4 +1,5 @@
 name: Provision Azure Resources
+run-name: Provision Azure Resources
 on:
     push:
       branches: [ main ]

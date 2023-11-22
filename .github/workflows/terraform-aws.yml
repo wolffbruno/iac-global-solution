@@ -1,4 +1,5 @@
 name: Provision AWS Resources
+run-name: Provision AWS Resources
 on:
   push:
     branches: [main]

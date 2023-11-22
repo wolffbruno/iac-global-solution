@@ -1,3 +1,17 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+    }
+  }
+
+  backend "azurerm" {
+    resource_group_name  = "iac"
+    storage_account_name = "terraformstatebvw"
+    container_name       = "terraformstate"
+    key                  = "terraform.tfstate"
+  }
+}
 // AZURE TERRAFORM PROVIDER
 provider "azurerm" {
   features {}
@@ -7,7 +21,7 @@ provider "azurerm" {
 # create a blob storage account
 
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-terraform"
+  name     = "iac-terraform"
   location = "eastus"
 }
 

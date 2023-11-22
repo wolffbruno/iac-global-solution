@@ -15,6 +15,7 @@ terraform {
 // AZURE TERRAFORM PROVIDER
 provider "azurerm" {
   features {}
+  use_oidc = true
 }
 
 # Path: main.tf

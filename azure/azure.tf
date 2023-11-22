@@ -179,7 +179,6 @@ resource "azurerm_network_interface" "web_nic_1" {
     name                          = "ipConfiguration1"
     subnet_id                     = azurerm_subnet.web.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.nic_1.id
   }
 }
 
@@ -200,7 +199,6 @@ resource "azurerm_network_interface" "web_nic_2" {
         name                          = "ipConfiguration2"
         subnet_id                     = azurerm_subnet.web.id
         private_ip_address_allocation = "Dynamic"
-        public_ip_address_id          = azurerm_public_ip.nic_2.id
     }
 }
 

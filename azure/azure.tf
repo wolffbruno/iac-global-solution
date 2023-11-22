@@ -101,6 +101,7 @@ resource "azurerm_linux_virtual_machine" "web_instance_1" {
   size                  = "Standard_B1ls"
   admin_username        = "adminuser"
   network_interface_ids = [azurerm_network_interface.web_nic_1.id]
+  disable_password_authentication = false
 
   os_disk {
     caching              = "ReadWrite"
@@ -134,6 +135,7 @@ resource "azurerm_linux_virtual_machine" "web_instance_2" {
   size                  = "Standard_B1ls"
   admin_username        = "adminuser"
   network_interface_ids = [azurerm_network_interface.web_nic_2.id]
+  disable_password_authentication = false
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"

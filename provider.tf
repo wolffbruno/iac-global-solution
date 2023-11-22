@@ -16,8 +16,6 @@ terraform {
 provider "azurerm" {
   features {}
   use_msi = true
-  use_cli = true
-  use_oidc = true
 }
 
 # Path: main.tf

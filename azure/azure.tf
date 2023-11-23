@@ -52,6 +52,13 @@ resource "azurerm_public_ip" "web" {
   allocation_method   = "Static"
 }
 
+resource "azurerm_public_ip" "web_vm" {
+  name                = "public-ip"
+  location            = azurerm_resource_group.web.location
+  resource_group_name = azurerm_resource_group.web.name
+  allocation_method   = "Static"
+}
+
 # Load Balancer
 resource "azurerm_lb" "web" {
   name                = "load-balancer"
@@ -125,6 +132,8 @@ resource "azurerm_virtual_machine" "web_instance_1" {
   os_profile_linux_config {
     disable_password_authentication = false
   }
+
+  // public ip
 }
 
 # Create network interface for the VMs
@@ -143,6 +152,7 @@ resource "azurerm_network_interface" "web_nic_1" {
     name                          = "ip-configuration1"
     subnet_id                     = azurerm_subnet.web.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.nic_1.id
   }
 }
 

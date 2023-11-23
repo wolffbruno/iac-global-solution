@@ -109,7 +109,7 @@ resource "azurerm_lb_probe" "web" {
 
 # Azure Virtual Machine - Instance 1
 resource "azurerm_virtual_machine" "web_instance_1" {
-  name                = "web-instance-root"
+  name                = "web-instance-root-1"
   resource_group_name = azurerm_resource_group.web.name
   location            = azurerm_resource_group.web.location
   vm_size             = "Standard_DS1_v2"
@@ -122,13 +122,13 @@ resource "azurerm_virtual_machine" "web_instance_1" {
     version   = "latest"
   }
   storage_os_disk {
-    name              = "staticsite-vm-disk"
+    name              = "staticsite-vm-disk-1"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
   os_profile {
-    computer_name  = "staticsite-vm"
+    computer_name  = "staticsite-vm-1"
     admin_username = "vmuser"
     admin_password = "Password1234!"
     custom_data    = base64encode(data.template_file.cloud_init.rendered)

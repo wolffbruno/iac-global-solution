@@ -29,3 +29,6 @@ jobs:
 
     - name: 'Terraform apply'
       run: terraform apply -auto-approve -lock=false
+
+    - name: Terraform Show
+      run: terraform show

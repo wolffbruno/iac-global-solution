@@ -98,7 +98,7 @@ resource "azurerm_lb_probe" "web" {
 
 # Azure Virtual Machine - Instance 1
 resource "azurerm_virtual_machine" "web_instance_1" {
-  name                = "web-instance-1"
+  name                = "web-instance-root"
   resource_group_name = azurerm_resource_group.web.name
   location            = azurerm_resource_group.web.location
   vm_size             = "Standard_DS1_v2"

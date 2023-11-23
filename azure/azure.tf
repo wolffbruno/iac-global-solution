@@ -171,3 +171,63 @@ resource "azurerm_network_interface_backend_address_pool_association" "web_nic1_
 output "lb_ip_address" {
   value = azurerm_public_ip.web.ip_address
 }
+
+
+//create second vm
+resource "azurerm_public_ip" "nic_2" {
+  name                = "public-ip-address-name2"
+  location            = azurerm_resource_group.web.location
+  resource_group_name = azurerm_resource_group.web.name
+  allocation_method   = "Static"
+}
+
+resource "azurerm_network_interface" "web_nic_2" {
+  name                = "web-nic-2"
+  location            = azurerm_resource_group.web.location
+  resource_group_name = azurerm_resource_group.web.name
+
+  ip_configuration {
+    name                          = "ip-configuration2"
+    subnet_id                     = azurerm_subnet.web.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.nic_2.id
+  }
+}
+
+resource "azurerm_network_interface_backend_address_pool_association" "web_nic2_association" {
+  network_interface_id    = azurerm_network_interface.web_nic_2.id
+  ip_configuration_name   = "ip-configuration2"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.web.id
+}
+
+resource "azurerm_virtual_machine" "web_instance_2" {
+  name                = "web-instance-root-2"
+  resource_group_name = azurerm_resource_group.web.name
+  location            = azurerm_resource_group.web.location
+  vm_size             = "Standard_DS1_v2"
+  network_interface_ids = [azurerm_network_interface.web_nic_2.id]
+
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+  storage_os_disk {
+    name              = "staticsite-vm-disk-2"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+  os_profile {
+    computer_name  = "staticsite-vm-2"
+    admin_username = "vmuser"
+    admin_password = "Password1234!"
+    custom_data    = base64encode(data.template_file.cloud_init.rendered)
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+
+  // public ip
+}

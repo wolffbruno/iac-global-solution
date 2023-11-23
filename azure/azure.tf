@@ -78,7 +78,7 @@ resource "azurerm_lb_backend_address_pool" "web" {
   name            = "backend-pool"
 }
 
-# Load Balancer Rule for HTTP Traffic
+# Load Balancer Rule for HTTP Traffic.
 resource "azurerm_lb_rule" "web" {
   name                           = "HTTP"
   loadbalancer_id                = azurerm_lb.web.id

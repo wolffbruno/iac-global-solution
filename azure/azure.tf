@@ -1,92 +1,70 @@
-# Define Azure provider and resource group
-provider "azurerm" {
-  features {}
-}
-
-resource "azurerm_resource_group" "example" {
-  name     = "example-resource-group"
-  location = "East US"
-}
-
-# Create a public load balancer
-resource "azurerm_lb" "example" {
-  name                = "example-lb"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  sku                 = "Standard"
-
-  frontend_ip_configuration {
-    name                         = "PublicIPAddress"
-    public_ip_address_id = azurerm_public_ip.example.id
+locals {
+  resource_name_prefix = "web"
+  common_tags = {
+    environment = "dev"
+    costcenter  = "it"
   }
 }
 
-# Create a public IP address
-resource "azurerm_public_ip" "example" {
-  name                = "example-pip"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+# Resource-1: Create Resource Group
+resource "azurerm_resource_group" "rg" {
+  name     = "${local.resource_name_prefix}-rg"
+  location = "eastus"
+  tags = local.common_tags
+}
+
+# Resource-1: Create Public IP Address for Azure Load Balancer
+resource "azurerm_public_ip" "web_lbpublicip" {
+  name                = "${local.resource_name_prefix}-lbpublicip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
   allocation_method   = "Static"
+  sku = "Standard"
+  tags = local.common_tags
 }
 
-# Create a network security group (optional)
-resource "azurerm_network_security_group" "example" {
-  name                = "example-nsg"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-}
-
-# Create a virtual machine (optional)
-resource "azurerm_virtual_machine" "example" {
-  name                = "example-vm"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  vm_size             = "Standard_DS1_v2"
-
-  network_interface_ids = [azurerm_network_interface.example.id]
-
-  storage_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
-    version   = "latest"
-  }
-
-  storage_os_disk {
-    name              = "example-os-disk"
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Premium_LRS"
-  }
-
-  os_profile {
-    computer_name  = "examplevm"
-    admin_username = "adminuser"
-    admin_password = "Password1234!"
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = false
+# Resource-2: Create Azure Standard Load Balancer
+resource "azurerm_lb" "web_lb" {
+  name                = "${local.resource_name_prefix}-web-lb"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku = "Standard"
+  frontend_ip_configuration {
+    name                 = "web-lb-publicip-1"
+    public_ip_address_id = azurerm_public_ip.web_lbpublicip.id
   }
 }
 
-# Create a virtual machine network interface (optional)
-resource "azurerm_network_interface" "example" {
-  name                = "example-nic"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  ip_configuration {
-    name                          = "nicConfiguration1"
-    subnet_id                     = azurerm_subnet.example.id
-    private_ip_address_allocation = "Dynamic"
-  }
+# Resource-3: Create LB Backend Pool
+resource "azurerm_lb_backend_address_pool" "web_lb_backend_address_pool" {
+  name                = "web-backend"
+  loadbalancer_id     = azurerm_lb.web_lb.id
 }
 
-# Create a virtual machine subnet (optional)
-resource "azurerm_subnet" "example" {
-  name                 = "example-subnet"
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
-  address_prefixes     = ["10.0.2.0/24"]
+# Resource-4: Create LB Probe
+resource "azurerm_lb_probe" "web_lb_probe" {
+  name                = "tcp-probe"
+  protocol            = "Tcp"
+  port                = 80
+  loadbalancer_id     = azurerm_lb.web_lb.id
+}
+
+# Resource-5: Create LB Rule
+resource "azurerm_lb_rule" "web_lb_rule_app1" {
+  name                           = "web-app1-rule"
+  protocol                       = "Tcp"
+  frontend_port                  = 80
+  backend_port                   = 80
+  frontend_ip_configuration_name = azurerm_lb.web_lb.frontend_ip_configuration[0].name
+  probe_id                       = azurerm_lb_probe.web_lb_probe.id
+  loadbalancer_id                = azurerm_lb.web_lb.id
+}
+
+
+# Resource-6: Associate Network Interface and Standard Load Balancer
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association
+resource "azurerm_network_interface_backend_address_pool_association" "web_nic_lb_associate" {
+  network_interface_id    = azurerm_network_interface.web_linuxvm_nic.id
+  ip_configuration_name   = azurerm_network_interface.web_linuxvm_nic.ip_configuration[0].name
+  backend_address_pool_id = azurerm_lb_backend_address_pool.web_lb_backend_address_pool.id
 }

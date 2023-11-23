@@ -6,7 +6,4 @@ sudo apt update
 echo "Install Apache"
 sudo apt install apache2 git -y
 
-echo "Install application"
-cd /tmp
-git clone https://github.com/kledsonhugo/staticsite
-cp /tmp/staticsite/*.html /var/www/html/
+echo "<html><body><h1>Hello World</h1></body></html>" | sudo tee /var/www/html/index.html

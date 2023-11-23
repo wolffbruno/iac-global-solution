@@ -87,6 +87,9 @@ resource "azurerm_lb_rule" "web" {
   backend_port                   = 80
   frontend_ip_configuration_name = "public-ip"
   probe_id                       = azurerm_lb_probe.web.id
+  backend_address_pool_ids = [
+    azurerm_lb_backend_address_pool.web.id,
+  ]
 }
 
 # Load Balancer Health Probe for HTTP Traffic

@@ -82,6 +82,10 @@ resource "azurerm_lb_rule" "web" {
 }
 
 # Load Balancer Health Probe for HTTP Traffic
+
+data "template_file" "cloud_init" {
+  template = file("./init/cloud_init.sh")
+}
 resource "azurerm_lb_probe" "web" {
   name                = "health-probe"
   loadbalancer_id     = azurerm_lb.web.id
@@ -93,38 +97,34 @@ resource "azurerm_lb_probe" "web" {
 }
 
 # Azure Virtual Machine - Instance 1
-resource "azurerm_linux_virtual_machine" "web_instance_1" {
-  name                            = "web-instance-1"
-  computer_name                   = "hostname1"
-  resource_group_name             = azurerm_resource_group.web.name
-  location                        = azurerm_resource_group.web.location
-  size                            = "Standard_B1ls"
-  admin_username                  = "adminuser"
-  admin_password                  = "Password1234!"
-  network_interface_ids           = [azurerm_network_interface.web_nic_1.id]
-  disable_password_authentication = false
+resource "azurerm_virtual_machine" "web_instance_1" {
+  name                = "web-instance-1"
+  resource_group_name = azurerm_resource_group.web.name
+  location            = azurerm_resource_group.web.location
+  vm_size             = "Standard_DS1_v2"
+  network_interface_ids = [azurerm_network_interface.web_nic_1.id]
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
+  storage_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
     version   = "latest"
   }
-
-  custom_data = base64encode(<<-EOF
-                #!/bin/bash
-                sudo apt-get update
-                sudo apt-get install -y apache2
-                sudo systemctl start apache2
-                sudo systemctl enable apache2
-                echo '<h1>Página HTML própria do Bruno Vinícius Wolff</h1>' | sudo tee /var/www/html/index.html
-                EOF
-  )
+  storage_os_disk {
+    name              = "staticsite-vm-disk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+  os_profile {
+    computer_name  = "staticsite-vm"
+    admin_username = "vmuser"
+    admin_password = "Password1234!"
+    custom_data    = base64encode(data.template_file.cloud_init.rendered)
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
 }
 
 # Create network interface for the VMs
